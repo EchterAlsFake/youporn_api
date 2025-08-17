@@ -273,7 +273,6 @@ class Video:
         self.core = core
         self.logger = setup_logger(name="YOUPORN API - [Video]", level=logging.ERROR)
         self.html_content = self.core.fetch(self.url)
-        print(self.html_content)
 
         if isinstance(self.html_content, Response):
             raise VideoUnavailable(f"The Video: {self.url} is unavailable / not found.")
@@ -308,9 +307,13 @@ class Video:
         return self.soup.find("span", class_="publishedDate").text.strip()
 
     @cached_property
-    def author(self) -> Pornstar:
-        return Pornstar(f'https://youporn.com{self.soup.find("div", class_="submitByLink").find("a").get("href")}',
-                        core=self.core)
+    def author(self) -> Pornstar | Channel:
+        link = f'https://youporn.com{self.soup.find("div", class_="submitByLink").find("a").get("href")}'
+        if "channel" in link:
+            return Channel(link, core=self.core)
+
+        else:
+            return Pornstar(link, core=self.core)
 
     @cached_property
     def m3u8_base_url(self) -> str:
@@ -360,7 +363,13 @@ class Video:
                            remux=remux, callback_remux=callback_remux)
         return True
 
-
+    def get_segments(self, quality) -> list:
+        """
+        :param quality: (str, Quality) The video quality
+        :return: (list) A list of segments (the .ts files)
+        """
+        segments = self.core.get_segments(quality=quality, m3u8_url_master=self.m3u8_base_url)
+        return segments
 
 
 class Client(Helper):
