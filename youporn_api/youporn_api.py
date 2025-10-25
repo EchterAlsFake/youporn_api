@@ -3,10 +3,9 @@ import json
 import logging
 
 from httpx import Response
-from bs4 import BeautifulSoup
 from functools import cached_property
-from base_api.base import BaseCore, setup_logger
 from base_api.modules.config import RuntimeConfig
+from base_api.base import BaseCore, setup_logger, Helper
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Generator, Optional, Literal, Dict, Tuple
 
@@ -74,86 +73,14 @@ def build_master_playlist(variants: List[Dict]) -> str:
     return "\n".join(lines) + "\n"
 
 
-class ErrorVideo:
-    """Drop-in-ish stand-in that raises when accessed."""
-    def __init__(self, url: str, err: Exception):
-        self.url = url
-        self._err = err
-
-    def __getattr__(self, _):
-        # Any attribute access surfaces the original error
-        raise self._err
-
-
-class Helper:
-    def __init__(self, core: BaseCore):
-        super(Helper).__init__()
-        self.core = core
-
-    def _get_video(self, url: str):
-        return Video(url, core=self.core)
-
-    def _make_video_safe(self, url: str):
-        try:
-            return Video(url, core=self.core)
-        except Exception as e:
-            return ErrorVideo(url, e)
-
-    @staticmethod
-    def _fetch_videos_from_html(html_content: str):
-        video_urls = []
-        soup = BeautifulSoup(html_content, "html.parser")
-        try:
-            main_container = soup.find("div", class_="full-row-thumbs")
-            videos_container = main_container.find_all("div", class_="video-box pc js_video-box thumbnail-card js-pop")
-
-        except AttributeError:
-            main_container = soup.find("div", class_="three-thumbs-row")
-            videos_container = main_container.find_all("div", class_="video-box pc js_video-box thumbnail-card js-pop")
-
-        # Fetch content from HTML, if page = 0, to reduce one network request
-        for video_object in videos_container:
-            video_urls.append(f'https://youporn.com{video_object.find("a")["href"]}')
-
-        return video_urls
-
-    def iterator(self, pages: int = 0, max_workers=20):
-        if pages == 0:
-            pages = 100
-
-        # create one pool and reuse it across pages (less overhead)
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            for page in range(pages):
-                if page == 1:
-                    continue
-
-                if not self.url.endswith("/"):
-                    self.url = self.url + "/"
-
-                if page == 0:
-                    html_content = self.core.fetch(self.url)
-
-                else:
-                    html_content = self.core.fetch(f"{self.url}?page={page}")
-
-                if isinstance(html_content, Response):
-                    break  # No more videos available
-                video_urls = self._fetch_videos_from_html(html_content)
-
-                futures = [executor.submit(self._make_video_safe, url) for url in video_urls]
-                for fut in as_completed(futures):
-                    yield fut.result()  # Either Video or ErrorVideo
-
-
 class Channel(Helper):
     def __init__(self, url: str, core: BaseCore):
-        super(Channel, self).__init__(core)
+        super(Channel, self).__init__(core, video=Video)
         self.url = url
         self.core = core
         self.html_content = self.core.fetch(url)
-        self.soup = BeautifulSoup(self.html_content, "html.parser")
+        self.soup = BeautifulSoup(self.html_content, "lxml")
         self.channel_info_box = self.soup.find("div", class_="channel-sideBar")
-
 
     @cached_property
     def name(self) -> str:
@@ -180,17 +107,21 @@ class Channel(Helper):
     def description(self) -> str:
         return self.soup.find("div", class_="channel-description").find("p").text.strip()
 
-    def videos(self, pages: int = 0, max_workers=20):
-        yield from self.iterator(pages=pages, max_workers=max_workers)
+    def videos(self, pages: int = 2, videos_concurrency: int = None, pages_concurrency: int = None):
+        page_urls = [f"{self.url}?page={page}" for page in range(1, pages + 1)]
+        videos_concurrency = videos_concurrency or self.core.config.videos_concurrency
+        pages_concurrency = pages_concurrency or self.core.config.pages_concurrency
+        yield from self.iterator(page_urls=page_urls, videos_concurrency=videos_concurrency, pages_concurrency=pages_concurrency,
+                                 extractor=extractor_html)
 
 
 class Collection(Helper):
     def __init__(self, url: str, core: BaseCore):
-        super(Collection, self).__init__(core)
+        super(Collection, self).__init__(core, video=Video)
         self.url = url
         self.core = core
         self.html_content = self.core.fetch(self.url)
-        self.soup = BeautifulSoup(self.html_content, "html.parser")
+        self.soup = BeautifulSoup(self.html_content, "lxml")
 
     @cached_property
     def name(self) -> str:
@@ -212,18 +143,23 @@ class Collection(Helper):
     def last_updated(self) -> str:
         return self.soup.find("li", class_="lastUpdated").find("p").text.strip()
 
-    def videos(self, pages: int = 0, max_workers=20):
-        yield from self.iterator(pages=pages, max_workers=max_workers)
+    def videos(self, pages: int = 2, videos_concurrency: int = None, pages_concurrency: int = None):
+        page_urls = [f"{self.url}?page={page}" for page in range(1, pages + 1)]
+        videos_concurrency = videos_concurrency or self.core.config.videos_concurrency
+        pages_concurrency = pages_concurrency or self.core.config.pages_concurrency
+        yield from self.iterator(page_urls=page_urls, videos_concurrency=videos_concurrency,
+                                 pages_concurrency=pages_concurrency,
+                                 extractor=extractor_html)
 
 
 class Pornstar(Helper):
     def __init__(self, url: str, core: BaseCore):
-        super(Pornstar, self).__init__(core)
+        super(Pornstar, self).__init__(core, video=Video)
         self.url = url
         self.core = core
         self.logger = setup_logger(name="YOUPORN API - [Pornstar]", level=logging.ERROR)
         self.html_content = self.core.fetch(self.url)
-        self.soup = BeautifulSoup(self.html_content, "html.parser")
+        self.soup = BeautifulSoup(self.html_content, "lxml")
 
     @cached_property
     def name(self) -> str:
@@ -243,16 +179,20 @@ class Pornstar(Helper):
 
         return dictionary
 
-    def videos(self, pages: int = 0, max_workers=20):
-        yield from self.iterator(pages=pages, max_workers=max_workers)
-
+    def videos(self, pages: int = 2, videos_concurrency: int = None, pages_concurrency: int = None):
+        page_urls = [f"{self.url}?page={page}" for page in range(1, pages + 1)]
+        videos_concurrency = videos_concurrency or self.core.config.videos_concurrency
+        pages_concurrency = pages_concurrency or self.core.config.pages_concurrency
+        yield from self.iterator(page_urls=page_urls, videos_concurrency=videos_concurrency,
+                                 pages_concurrency=pages_concurrency,
+                                 extractor=extractor_html)
 
 class User:
     def __init__(self, url: str, core: BaseCore):
         self.url = url
         self.core = core
         self.html_content = self.core.fetch(self.url)
-        self.soup = BeautifulSoup(self.html_content, "html.parser")
+        self.soup = BeautifulSoup(self.html_content, "lxml")
 
     @cached_property
     def name(self) -> str:
@@ -280,7 +220,7 @@ class Video:
         if region_locked_pattern.search(self.html_content):
             raise RegionBlocked(f"The Video: {self.url} is not available in your region!")
 
-        self.soup = BeautifulSoup(self.html_content, "html.parser")
+        self.soup = BeautifulSoup(self.html_content, "lxml")
 
     @cached_property
     def title(self) -> str:
@@ -374,9 +314,10 @@ class Video:
 
 class Client(Helper):
     def __init__(self, core: Optional[BaseCore] = None):
-        super().__init__(core)
+        super().__init__(core, video=Video)
         self.core = core or BaseCore(config=RuntimeConfig())
-        self.core.initialize_session(headers)
+        self.core.initialize_session()
+        self.core.session.headers.update(headers)
 
     def get_video(self, url: str) -> Video:
         return Video(url, core=self.core)
@@ -403,6 +344,8 @@ class Client(Helper):
                       filter_resolution: Literal[
                           "VR", "HD"
                       ] = None,
+                      videos_concurrency: int = None,
+                      pages_concurrency: int = None,
                       ):
         # Define basic filters
         res = ""
@@ -423,24 +366,9 @@ class Client(Helper):
         if filter_duration_maximum:
             max_minutes = f"max_minutes={filter_duration_maximum}&"
 
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            if pages == 0:
-                pages = 100
+        videos_concurrency = videos_concurrency or self.core.config.videos_concurrency
+        pages_concurrency = pages_concurrency or self.core.config.pages_concurrency
 
-            for page in range(pages):
-                if page == 1:
-                    continue
-
-                url = f"https://youporn.com{filter}{query}{res}{min_minutes}{max_minutes}&page={page}"
-                html_content = self.core.fetch(url)
-
-                if isinstance(html_content, Response):
-                    break  # No more videos available
-
-                video_urls = self._fetch_videos_from_html(html_content)
-
-                futures = [executor.submit(self._make_video_safe, url) for url in video_urls]
-                for fut in as_completed(futures):
-                    yield fut.result()  # Either Video or ErrorVideo
-
-# MOMOLAND BAAM 24/7!
+        page_urls = [f"https://youporn.com{filter}{query}{res}{min_minutes}{max_minutes}&page={page}" for page in range(1, pages + 1)]
+        yield from self.iterator(page_urls=page_urls, videos_concurrency=videos_concurrency, pages_concurrency=pages_concurrency,
+                                 extractor=extractor_html)
