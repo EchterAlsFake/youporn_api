@@ -18,6 +18,13 @@ except (ModuleNotFoundError, ImportError):
     from modules.consts import *
     from modules.errors import *
 
+try:
+    import lxml
+    parser = "lxml"
+
+except (ModuleNotFoundError, ImportError):
+    parser = "html.parser"
+
 
 def parse_bitrate_from_url(url: str) -> int | None:
     """
@@ -79,7 +86,7 @@ class Channel(Helper):
         self.url = url
         self.core = core
         self.html_content = self.core.fetch(url)
-        self.soup = BeautifulSoup(self.html_content, "lxml")
+        self.soup = BeautifulSoup(self.html_content, parser)
         self.channel_info_box = self.soup.find("div", class_="channel-sideBar")
 
     @cached_property
@@ -121,7 +128,7 @@ class Collection(Helper):
         self.url = url
         self.core = core
         self.html_content = self.core.fetch(self.url)
-        self.soup = BeautifulSoup(self.html_content, "lxml")
+        self.soup = BeautifulSoup(self.html_content, parser)
 
     @cached_property
     def name(self) -> str:
@@ -159,7 +166,7 @@ class Pornstar(Helper):
         self.core = core
         self.logger = setup_logger(name="YOUPORN API - [Pornstar]", level=logging.ERROR)
         self.html_content = self.core.fetch(self.url)
-        self.soup = BeautifulSoup(self.html_content, "lxml")
+        self.soup = BeautifulSoup(self.html_content, parser)
 
     @cached_property
     def name(self) -> str:
@@ -192,7 +199,7 @@ class User:
         self.url = url
         self.core = core
         self.html_content = self.core.fetch(self.url)
-        self.soup = BeautifulSoup(self.html_content, "lxml")
+        self.soup = BeautifulSoup(self.html_content, parser)
 
     @cached_property
     def name(self) -> str:
@@ -220,7 +227,7 @@ class Video:
         if region_locked_pattern.search(self.html_content):
             raise RegionBlocked(f"The Video: {self.url} is not available in your region!")
 
-        self.soup = BeautifulSoup(self.html_content, "lxml")
+        self.soup = BeautifulSoup(self.html_content, parser)
 
     @cached_property
     def title(self) -> str:

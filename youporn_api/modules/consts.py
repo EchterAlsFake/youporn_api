@@ -2,6 +2,13 @@ import re
 
 from bs4 import BeautifulSoup
 
+try:
+    import lxml
+    parser = "lxml"
+
+except (ModuleNotFoundError, ImportError):
+    parser = "html.parser"
+
 headers = {
     "Referer": "https://www.youporn.com/"
 }
@@ -30,7 +37,7 @@ BPS_FALLBACK = {
 
 def extractor_html(content: str):
     video_urls = []
-    soup = BeautifulSoup(content, "lxml")
+    soup = BeautifulSoup(content, parser)
     try:
         main_container = soup.find("div", class_="full-row-thumbs")
         videos_container = main_container.find_all("div", class_="video-box pc js_video-box thumbnail-card js-pop")
