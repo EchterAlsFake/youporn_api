@@ -341,15 +341,10 @@ wheels = [
 
 [[package]]
 name = "eaf-base-api"
-version = "2.5.1"
-source = { registry = "https://pypi.org/simple" }
+version = "2.5.2"
+source = { git = "https://github.com/EchterAlsFake/eaf_base_api#f2a04139549f286ce2b5960e6c7930fec1d4a460" }
 dependencies = [
-    { name = "httpx", extra = ["brotli", "http2", "socks"] },
-    { name = "m3u8" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/71/14/ac7a9803dbe974f03b6daf1a9e0809da24fa47d821d7e658849a595992f9/eaf_base_api-2.5.1.tar.gz", hash = "sha256:1dce788ab4066c604a3a9bda95ed65de1943a7041c8fd5fe7198ee13f51ed6d4", size = 26495, upload-time = "2025-12-16T09:51:15.346Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/84/87/2a3563b195e4dd5df883b9d9afa06a96c5dd7c0a6a0243b70561b67b842a/eaf_base_api-2.5.1-py3-none-any.whl", hash = "sha256:a2f5a56064ac996efd774dc9a8fd8969346a9d40888b27160ca3a92a19955b33", size = 26515, upload-time = "2025-12-16T09:51:13.295Z" },
+    { name = "httpx", extra = ["brotli"] },
 ]
 
 [[package]]
@@ -680,7 +675,7 @@ full = [
 requires-dist = [
     { name = "av", marker = "python_full_version >= '3.10' and extra == 'av'" },
     { name = "bs4" },
-    { name = "eaf-base-api" },
+    { name = "eaf-base-api", git = "https://github.com/EchterAlsFake/eaf_base_api" },
     { name = "httpx", extras = ["http2"], marker = "extra == 'full'" },
     { name = "httpx", extras = ["socks"], marker = "extra == 'full'" },
     { name = "lxml", marker = "extra == 'full'" },

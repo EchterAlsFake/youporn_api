@@ -1,12 +1,13 @@
+from __future__ import annotations
 import os
 import json
 import logging
+import threading
 
 from httpx import Response
 from functools import cached_property
 from base_api.modules.config import RuntimeConfig
 from base_api.base import BaseCore, setup_logger, Helper
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import List, Generator, Optional, Literal, Dict, Tuple
 
 
@@ -291,24 +292,35 @@ class Video:
         for pornstar_object in pornstars_:
             yield Pornstar(f'https://youporn.com{pornstar_object["href"]}', core=self.core)
 
-    def download(self, downloader, quality, path="./", callback=None, no_title=False, remux: bool = False,
-                 callback_remux=None) -> bool:
+    def download(self, quality, path="./", callback=None, no_title=False, remux: bool = False,
+                 callback_remux=None, start_segment: int = 0, stop_event: Optional[threading.Event] = None,
+                 segment_state_path: Optional[str] = None, segment_dir: Optional[str] = None,
+                 return_report: bool = False, cleanup_on_stop: bool = True, keep_segment_dir: bool = False
+                 ) -> bool:
         """
         :param callback:
-        :param downloader:
         :param quality:
         :param path:
         :param no_title:
         :param remux:
         :param callback_remux:
+        :param start_segment:
+        :param stop_event:
+        :param segment_state_path:
+        :param segment_dir:
+        :param return_report:
+        :param cleanup_on_stop:
+        :param keep_segment_dir:
         :return:
         """
         if not no_title:
             path = os.path.join(path, f"{self.title}.mp4")
 
-        self.core.download(video=self, quality=quality, path=path, callback=callback, downloader=downloader,
-                           remux=remux, callback_remux=callback_remux)
-        return True
+        return self.core.download(video=self, quality=quality, path=path, callback=callback, remux=remux,
+                           callback_remux=callback_remux, start_segment=start_segment, stop_event=stop_event,
+                           segment_state_path=segment_state_path, segment_dir=segment_dir, return_report=return_report,
+                           cleanup_on_stop=cleanup_on_stop, keep_segment_dir=keep_segment_dir)
+
 
     def get_segments(self, quality) -> list:
         """

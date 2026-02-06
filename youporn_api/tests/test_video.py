@@ -15,4 +15,5 @@ def test_everything():
     assert isinstance(video.publish_date, str)
     assert isinstance(video.author, Pornstar)
     assert isinstance(video.length, str)
-    assert video.download(quality="worst", downloader="threaded") is True
+    stuff = video.download(quality="worst", return_report=True)
+    assert stuff["status"] == "completed"
