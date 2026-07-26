@@ -4,11 +4,11 @@ build-backend = "uv_build"
 
 [project]
 name = "unofficial-api-for-youporn"
-version = "1.6"
+version = "1.7"
 description = "An asynchronous high-speed modern Python API for youporn.com: search, videos, channels, pornstars, downloading (selectolax + curl-cffi)"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.12"
-license = "LGPL-3.0-only"
+license = "AGPL-3.0-only"
 license-files = ["LICENSE"]
 authors = [
     { name = "Johannes Habel", email = "EchterAlsFake@proton.me" }
@@ -24,7 +24,6 @@ keywords = [
     "youporn"
 ]
 dependencies = [
-    "bs4",
     "eaf-base-api",
     "m3u8",
     "selectolax",
@@ -32,7 +31,7 @@ dependencies = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.12",
