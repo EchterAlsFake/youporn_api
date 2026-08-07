@@ -42,7 +42,10 @@ def extractor_html(content: str):
 
     # Fetch content from HTML, if page = 0, to reduce one network request
     for video_object in videos_container:
-        url = f'https://youporn.com{video_object.css_first("a").attributes.get("href")}'
+        video_link = video_object.css_first("a").attributes.get("href")
+        if not video_link:
+            continue
+        url = f"https://youporn.com{video_link}"
         video_id = video_object.attributes.get("data-video-id")
         uploader_id = video_object.attributes.get("data-uploader-id")
         uploader_status = video_object.attributes.get("data-uploader-status")

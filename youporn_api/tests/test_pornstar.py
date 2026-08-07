@@ -11,7 +11,7 @@ async def test_all():
     async for result in pornstar_real.videos():
         idx += 1
 
-        assert isinstance(result.video.title, str)
+        assert isinstance(result.unwrap().title, str)
 
         if idx == 1:
             break

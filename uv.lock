@@ -29,28 +29,12 @@ wheels = [
 ]
 
 [[package]]
-name = "beautifulsoup4"
-version = "4.15.0"
+name = "cachetools"
+version = "7.1.7"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "soupsieve" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/43/65/318323f98dbee45d42dff61d8f047181bc6f2268a9068cfad035a46be5af/beautifulsoup4-4.15.0.tar.gz", hash = "sha256:288e3ca7d54b06f2ac191970bc275c1939cb46d450b255bf6718b04aa37ab4f7", size = 632571, upload-time = "2026-06-07T16:44:20.453Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/70/d2/47e8bc06fe2a06d3f5bdf20f1126ab66c4e99dc48d940e7ba873f7ac7131/cachetools-7.1.7.tar.gz", hash = "sha256:a3e2a00b14d8f8a6b70c1dae7b4685e7ad3bc965c5b42124a2d6ce895da6cf50", size = 40680, upload-time = "2026-08-01T21:20:40.434Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl", hash = "sha256:d6f88de62e1d4e38ecb1077eb9724cd0eff29d2a08ca16a401e9b9e93f117cf9", size = 109924, upload-time = "2026-06-07T16:44:21.566Z" },
-]
-
-[[package]]
-name = "bs4"
-version = "0.0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "beautifulsoup4" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c9/aa/4acaf814ff901145da37332e05bb510452ebed97bc9602695059dd46ef39/bs4-0.0.2.tar.gz", hash = "sha256:a48685c58f50fe127722417bae83fe6badf500d54b55f7e39ffe43b798653925", size = 698, upload-time = "2024-01-17T18:15:47.371Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/51/bb/bf7aab772a159614954d84aa832c129624ba6c32faa559dfb200a534e50b/bs4-0.0.2-py2.py3-none-any.whl", hash = "sha256:abf8742c0805ef7f662dce4b51cca104cffe52b835238afc169142ab9b3fbccc", size = 1189, upload-time = "2024-01-17T18:15:48.613Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/d8/767faeda872075724b95dd675466a645f1b92aadcdcf2d1429dcfd76c176/cachetools-7.1.7-py3-none-any.whl", hash = "sha256:ef98ef375ad188819ef2f9b3645e3987f4b8c5b7550e436ad998c2de78296df0", size = 16830, upload-time = "2026-08-01T21:20:38.977Z" },
 ]
 
 [[package]]
@@ -182,15 +166,31 @@ wheels = [
 
 [[package]]
 name = "eaf-base-api"
-version = "3.3.2"
-source = { registry = "https://pypi.org/simple" }
+version = "4.0.0"
+source = { editable = "../eaf_base_api" }
 dependencies = [
+    { name = "cachetools" },
     { name = "curl-cffi" },
     { name = "tenacity" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/28/7a/1bfa4b6904ed2dd2a8d60a7a2c3469d696e4312c754d924b075952e15b6d/eaf_base_api-3.3.2.tar.gz", hash = "sha256:241003c3795f24d4800c4019fbc53e7cb1afebfc9f03bfcedf65a452acb55b80", size = 37763, upload-time = "2026-06-22T09:36:27.082Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4b/de/be75e76677b26bfde4fa515a37fecb738f64a129561a0762652c7df51035/eaf_base_api-3.3.2-py3-none-any.whl", hash = "sha256:bc60f5f948cc2a535a845e0c9b31f4d3dcebbad53c2f576f4d1396007973898c", size = 40805, upload-time = "2026-06-22T09:36:25.705Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "av", marker = "python_full_version >= '3.12' and extra == 'hls'" },
+    { name = "cachetools", specifier = ">=7.0.0" },
+    { name = "curl-cffi" },
+    { name = "m3u8", marker = "extra == 'hls'" },
+    { name = "tenacity", specifier = ">=9.1.2" },
+]
+provides-extras = ["hls"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy" },
+    { name = "pylint" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "types-m3u8" },
 ]
 
 [[package]]
@@ -299,15 +299,6 @@ wheels = [
 ]
 
 [[package]]
-name = "soupsieve"
-version = "2.8.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/47/2c/0a5f6f8ee0d5589e48c7640213ed5175d52cf540a06725b628cc1a45d6ce/soupsieve-2.8.4.tar.gz", hash = "sha256:e121fd02e975c695e4e9e8774a5ee35d74714b59307868dcc5319ad2d9e3328e", size = 121110, upload-time = "2026-05-24T13:55:57.154Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5e/f5/0c41cb68dcae6b7de4fac4188a3a9589e21fb31df21ea3a2e888db95e6c9/soupsieve-2.8.4-py3-none-any.whl", hash = "sha256:e7e6b0769c8f51ed59acab6e994b00621096cfb1c640a7509295987388fbaf65", size = 37304, upload-time = "2026-05-24T13:55:55.406Z" },
-]
-
-[[package]]
 name = "tenacity"
 version = "9.1.4"
 source = { registry = "https://pypi.org/simple" }
@@ -317,20 +308,11 @@ wheels = [
 ]
 
 [[package]]
-name = "typing-extensions"
-version = "4.16.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f6/cc/6253133b5bb138fc3306cebfbda2c520f545d36b5be2c7255cc528bb45d6/typing_extensions-4.16.0.tar.gz", hash = "sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5", size = 113555, upload-time = "2026-07-02T08:40:05.92Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl", hash = "sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8", size = 45571, upload-time = "2026-07-02T08:40:04.659Z" },
-]
-
-[[package]]
 name = "unofficial-api-for-youporn"
-version = "1.6"
+version = "1.7"
 source = { editable = "." }
 dependencies = [
-    { name = "bs4" },
+    { name = "curl-cffi" },
     { name = "eaf-base-api" },
     { name = "m3u8" },
     { name = "selectolax" },
@@ -344,8 +326,8 @@ av = [
 [package.metadata]
 requires-dist = [
     { name = "av", marker = "extra == 'av'" },
-    { name = "bs4" },
-    { name = "eaf-base-api" },
+    { name = "curl-cffi" },
+    { name = "eaf-base-api", editable = "../eaf_base_api" },
     { name = "m3u8" },
     { name = "selectolax" },
 ]

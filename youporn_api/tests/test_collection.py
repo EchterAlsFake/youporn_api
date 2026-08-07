@@ -17,6 +17,6 @@ async def test_playlist():
     idx = 0
     async for video in playlist.videos(pages=2):
         idx += 1
-        assert isinstance(video.video.title, str)
+        assert isinstance(video.unwrap().title, str)
         if idx >= 3:
             break

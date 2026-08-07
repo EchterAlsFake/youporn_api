@@ -24,9 +24,10 @@ keywords = [
     "youporn"
 ]
 dependencies = [
-    "eaf-base-api",
-    "m3u8",
-    "selectolax",
+  "eaf-base-api>=4.0.0",
+  "curl-cffi",
+  "m3u8",
+  "selectolax",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -57,3 +58,6 @@ packages = { find = {} }
 [tool.uv.build-backend]
 module-name = "youporn_api"
 module-root = ""
+
+[tool.uv.sources]
+eaf-base-api = { path = "../eaf_base_api", editable = true }
