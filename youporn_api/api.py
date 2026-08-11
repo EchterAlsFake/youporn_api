@@ -152,7 +152,7 @@ class Channel(BaseMedia):
         self,
         pages: int = 2,
         iterator_config: IteratorConfig | None = None,
-    ) -> AsyncGenerator[ScrapeResult, None]:
+    ) -> AsyncGenerator[ScrapeResult[Video], None]:
         helper = Helper(core=self.core, constructor=Video)
         url = self.url
         page_urls = [f"{url}?page={page}" for page in range(1, pages + 1)]
@@ -210,7 +210,7 @@ class Collection(BaseMedia):
         self,
         pages: int = 2,
         iterator_config: IteratorConfig | None = None,
-    ) -> AsyncGenerator[ScrapeResult, None]:
+    ) -> AsyncGenerator[ScrapeResult[Video], None]:
 
         helper = Helper(core=self.core, constructor=Video)
         url = self.url
@@ -266,7 +266,7 @@ class Pornstar(BaseMedia):
         self,
         pages: int = 2,
         iterator_config: IteratorConfig | None = None,
-    ) -> AsyncGenerator[ScrapeResult, None]:
+    ) -> AsyncGenerator[ScrapeResult[Video], None]:
         helper = Helper(core=self.core, constructor=Video)
 
         page_urls = [f"{self.url}?page={page}" for page in range(1, pages + 1)]
@@ -542,7 +542,7 @@ class Client:
                           "VR", "HD"
                       ] | None = None,
                       iterator_config: IteratorConfig | None = None,
-                      ) -> AsyncGenerator[ScrapeResult, None]:
+                      ) -> AsyncGenerator[ScrapeResult[Video], None]:
         # Define basic filters
         query = query.replace(" ", "+")
         res = ""
