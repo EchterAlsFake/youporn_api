@@ -50,8 +50,8 @@ logger.addHandler(logging.NullHandler())
 def make_iterator_config() -> IteratorConfig:
     return IteratorConfig(
         load_specific_sources=("html",),
-        item_retry=RetryPolicy(max_attempts=3),
-        page_retry=RetryPolicy(max_attempts=3),
+        item_retry=None,
+        page_retry=None,
         page_error_mode=ErrorMode.SKIP,
         item_error_handler=None,
         page_error_handler=None,
