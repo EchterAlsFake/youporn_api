@@ -41,6 +41,9 @@ classifiers = [
     "Topic :: Multimedia :: Video"
 ]
 
+[project.scripts]
+youporn_api = "youporn_api.api:main"
+
 [project.optional-dependencies]
 av = ["av"]
 
